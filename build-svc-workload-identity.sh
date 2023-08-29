@@ -1,3 +1,5 @@
+roles=$(yq '.iam.roles[]' ./roles/$TARGET.yaml)
+
 wli=$(kubectl get sa -o=name | grep $TARGET)
 gsa=$(gcloud iam service-accounts list --project=$PROJECT | grep -w $TARGET)
 
@@ -17,3 +19,28 @@ if [[ -z "$gsa" ]]; then
 else
   echo "${green}Google service account already exist for $TARGET${green}${end}"
 fi
+
+
+
+echo "${yel}Binding service roles ${yel}${end}"
+for role in $roles; do
+  # remove double quotes
+  role=$(echo "$role" | tr -d '"')
+  gcloud projects add-iam-policy-binding $PROJECT \
+   --member="serviceAccount:$TARGET@$PROJECT.iam.gserviceaccount.com" \
+   --role="$role" \
+   --condition=None
+done
+
+
+
+echo "${yel}Binding the Workload identity of KSA and GSA..${yel} ${end}"
+gcloud iam service-accounts add-iam-policy-binding $TARGET@$PROJECT.iam.gserviceaccount.com \
+--role roles/iam.workloadIdentityUser \
+--member="serviceAccount:$PROJECT.svc.id.goog[default/$TARGET]"
+
+
+kubectl annotate serviceaccount \
+$TARGET  \
+iam.gke.io/gcp-service-account=$TARGET@root-cortex-387409.iam.gserviceaccount.com
+

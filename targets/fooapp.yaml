@@ -23,12 +23,27 @@ spec:
     spec:
       serviceAccountName: test
       containers:
-      - image: gcr.io/root-cortex-387409/python-backend-boilerplate@sha256:b6473a2afa881989519246e8e42186632474f442a67e9cb7e0d5d196f5118843
+      - image: gcr.io/root-cortex-387409/python-backend-boilerplate@sha256:2317467aba73f49254e23e724075755d2c0096ba2a2dff12e244e8b2e7a6dee4
         imagePullPolicy: IfNotPresent
         name: python-backend-boilerplate
         env:
-          - name: GCS_PROJECT
-            value: "root-cortex-387409"
+        - name: GCS_PROJECT
+          value: "root-cortex-387409"
+        - name: FOO_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: fooapp-gke-cloud-sql-secrets
+              key: username
+        - name: FOO_DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: fooapp-gke-cloud-sql-secrets
+              key: password
+        - name: FOO_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: fooapp-gke-cloud-sql-secrets
+              key: host
         resources:
           limits:
             cpu: 500m
