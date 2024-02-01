@@ -1,4 +1,6 @@
+# read the roles from the app target roles file, in infra/roles/$TARGET.yaml directory
 roles=$(yq '.iam.roles[]' ./roles/$TARGET.yaml)
+
 
 wli=$(kubectl get sa -o=name | grep $TARGET)
 gsa=$(gcloud iam service-accounts list --project=$PROJECT | grep -w $TARGET)
